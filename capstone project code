@@ -1,0 +1,149 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+
+
+public class HangmanGame extends JFrame {
+    private String[] words = {"hello",”java”,”sam immanuel”,”balaji”};
+    private String secretWord;
+    private Set<Character> guesses;
+    private int remainingAttempts = 6;
+
+
+    private JLabel wordLabel;
+    private JTextField guessEntry;
+    private JLabel messageLabel;
+    private JLabel hangmanDisplay;
+
+
+    public HangmanGame() {
+        setTitle("Hangman Game");
+        setSize(800, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        getContentPane().setBackground(Color.LIGHT_GRAY);
+        setLayout(null);
+
+
+        guesses = new HashSet<>();
+        secretWord = words[new Random().nextInt(words.length)];
+
+
+        wordLabel = new JLabel("_ ".repeat(secretWord.length()));
+        wordLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        wordLabel.setBounds(300, 100, 400, 40);
+        add(wordLabel);
+
+
+        guessEntry = new JTextField(1);
+        guessEntry.setFont(new Font("Arial", Font.PLAIN, 16));
+        guessEntry.setBounds(350, 160, 100, 30);
+        add(guessEntry);
+
+
+        JButton guessButton = new JButton("Guess");
+        guessButton.setBounds(350, 210, 100, 30);
+        add(guessButton);
+
+
+        messageLabel = new JLabel("");
+        messageLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        messageLabel.setBounds(300, 260, 400, 40);
+        add(messageLabel);
+
+
+        hangmanDisplay = new JLabel();
+        hangmanDisplay.setFont(new Font("Arial", Font.PLAIN, 20));
+        hangmanDisplay.setBounds(350, 320, 400, 200);
+        add(hangmanDisplay);
+        updateHangmanDisplay();
+
+
+        guessButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                makeGuess();
+            }
+        });
+    }
+
+
+    private void makeGuess() {
+        String guessText = guessEntry.getText().toLowerCase();
+        guessEntry.setText("");
+
+
+        if (guessText.length() != 1 || !Character.isLetter(guessText.charAt(0))) {
+            messageLabel.setText("Please enter a single letter.");
+            return;
+        }
+
+
+        char guess = guessText.charAt(0);
+
+
+        if (guesses.contains(guess)) {
+            messageLabel.setText("You already guessed that letter.");
+            return;
+        }
+
+
+        guesses.add(guess);
+
+
+        if (secretWord.indexOf(guess) >= 0) {
+            updateWordDisplay();
+            if (!wordLabel.getText().contains("_")) {
+                messageLabel.setText("Congratulations! You won!");
+                guessEntry.setEditable(false);
+            }
+        } else {
+            remainingAttempts--;
+            updateHangmanDisplay();
+            if (remainingAttempts == 0) {
+                messageLabel.setText("Game over! The word was '" + secretWord + "'.");
+                guessEntry.setEditable(false);
+            }
+        }
+    }
+
+
+    private void updateWordDisplay() {
+        StringBuilder display = new StringBuilder();
+        for (char letter : secretWord.toCharArray()) {
+            display.append(guesses.contains(letter) ? letter + " " : "_ ");
+        }
+        wordLabel.setText(display.toString());
+    }
+
+
+    private void updateHangmanDisplay() {
+        String[] hangmanParts = {
+                " ________",
+                " |        |",
+                " |        O",
+                " |       /|\\",
+                " |       / \\",
+                " |",
+                " |"
+        };
+        StringBuilder display = new StringBuilder();
+        for (int i = 0; i < hangmanParts.length - remainingAttempts; i++) {
+            display.append(hangmanParts[i]).append("\n");
+        }
+        hangmanDisplay.setText("<html>" + display.toString().replace("\n", "<br>") + "</html>");
+    }
+
+
+    public static void main(String[] args) {
+        HangmanGame hangmanGame = new HangmanGame();
+        hangmanGame.setVisible(true);
+    }
+}
+
+
+
+
